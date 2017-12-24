@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.anu.classicalmusicquizapp.QuizActivity">
+    <ImageView
+        android:src="@drawable/ic_question_mark"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/playerHeight"
+        android:id="@+id/img_composer"/>
+    <LinearLayout
+        android:id="@+id/layout_one"
+        android:layout_below="@+id/img_composer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:textSize="@dimen/optionTextSize"
+            android:id="@+id/btn_A"
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/optionsHeight" />
+        <Button
+            android:textSize="@dimen/optionTextSize"
+            android:id="@+id/btn_B"
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/optionsHeight" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/layout_two"
+        android:layout_below="@+id/layout_one"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:textSize="@dimen/optionTextSize"
+            android:id="@+id/btn_C"
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/optionsHeight" />
+        <Button
+            android:textSize="@dimen/optionTextSize"
+            android:id="@+id/btn_D"
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/optionsHeight" />
+    </LinearLayout>
+</RelativeLayout>

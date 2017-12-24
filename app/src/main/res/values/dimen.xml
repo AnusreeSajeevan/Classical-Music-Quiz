@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="scoreTextSize">16sp</dimen>
+    <dimen name="optionTextSize">12sp</dimen>
+
+    <dimen name="ScoreMarginTop">100dp</dimen>
+
+    <dimen name="playerHeight">230dp</dimen>
+    <dimen name="optionsHeight">100dp</dimen>
+</resources>
