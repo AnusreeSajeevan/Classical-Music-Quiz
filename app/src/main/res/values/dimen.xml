@@ -6,5 +6,5 @@
     <dimen name="ScoreMarginTop">100dp</dimen>
 
     <dimen name="playerHeight">230dp</dimen>
-    <dimen name="optionsHeight">100dp</dimen>
+    <dimen name="optionsHeight">150dp</dimen>
 </resources>

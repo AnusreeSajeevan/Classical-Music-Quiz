@@ -5,4 +5,5 @@
     <string name="high_score_display_text">High score : %1$d / %2$d</string>
     <string name="your_score_display_text">Your score : %1$d / %2$d</string>
     <string name="sample_list_load_error">Error loading one or more samples</string>
+    <string name="music_not_found">Music not found</string>
 </resources>

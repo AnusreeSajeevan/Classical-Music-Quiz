@@ -5,45 +5,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.anu.classicalmusicquizapp.QuizActivity">
-    <ImageView
+    <com.google.android.exoplayer2.ui.SimpleExoPlayerView
         android:src="@drawable/ic_question_mark"
         android:layout_width="match_parent"
         android:layout_height="@dimen/playerHeight"
-        android:id="@+id/img_composer"/>
+        android:id="@+id/exo_player_view"/>
     <LinearLayout
         android:id="@+id/layout_one"
-        android:layout_below="@+id/img_composer"
+        android:layout_below="@+id/exo_player_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="@dimen/optionsHeight">
         <Button
             android:textSize="@dimen/optionTextSize"
             android:id="@+id/btn_A"
             android:layout_weight=".5"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/optionsHeight" />
+            android:layout_height="match_parent"
+            android:layout_width="0dp" />
         <Button
             android:textSize="@dimen/optionTextSize"
             android:id="@+id/btn_B"
+            android:layout_height="match_parent"
             android:layout_weight=".5"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/optionsHeight" />
+            android:layout_width="0dp"/>
     </LinearLayout>
     <LinearLayout
+        android:layout_height="@dimen/optionsHeight"
         android:id="@+id/layout_two"
         android:layout_below="@+id/layout_one"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent">
         <Button
             android:textSize="@dimen/optionTextSize"
             android:id="@+id/btn_C"
             android:layout_weight=".5"
             android:layout_width="0dp"
-            android:layout_height="@dimen/optionsHeight" />
+            android:layout_height="match_parent" />
         <Button
             android:textSize="@dimen/optionTextSize"
             android:id="@+id/btn_D"
             android:layout_weight=".5"
             android:layout_width="0dp"
-            android:layout_height="@dimen/optionsHeight" />
+            android:layout_height="match_parent" />
     </LinearLayout>
 </RelativeLayout>
