@@ -18,24 +18,31 @@ import com.example.anu.classicalmusicquizapp.model.Music;
 import com.example.anu.classicalmusicquizapp.utils.PreferenceUtils;
 import com.example.anu.classicalmusicquizapp.utils.QuizUtils;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class QuizActivity extends AppCompatActivity implements View.OnClickListener {
+public class QuizActivity extends AppCompatActivity implements View.OnClickListener,
+        ExoPlayer.EventListener{
 
     @BindView(R.id.btn_A)
     Button btnA;
@@ -89,7 +96,6 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         optionsIds = QuizUtils.getPossibleOptionsIds(remainingMusicIds);
-        Log.d(TAG, "optionIds : " + optionsIds.size());
         correctAnswerId = QuizUtils.getCorrectAnswerId(optionsIds);
 
         exoPlayerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(), R.drawable.ic_question_mark));
@@ -126,6 +132,8 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
             exoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
             exoPlayerView.setPlayer(exoPlayer);
 
+            exoPlayer.addListener(this);
+
             //Prepare the MediaSource using DefaultDataSourceFactory and DefaultExtractorsFactory, as well as the Sample URI you passed in.
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(this, Util.getUserAgent(this,
                     "ClassicalMusicQuizApp")), new DefaultExtractorsFactory(), null, null);
@@ -140,12 +148,8 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeButtons() {
         buttons = new Button[]{btnA, btnB, btnC, btnD};
         buttonIds = new int[]{btnA.getId(), btnB.getId(), btnC.getId(), btnD.getId()};
-        Log.d(TAG, "buttons : " + buttons.length);
-        Log.d(TAG, "buttonIds : " + buttonIds.length);
         for (int i = 0; i < optionsIds.size(); i++) {
-            Log.d(TAG, "i : " + i);
             Button currentButton = (Button) findViewById(buttonIds[i]);
-            Log.d(TAG, "correctAnswerId : " + correctAnswerId);
             Music music = QuizUtils.getMusicByID(this, optionsIds.get(i));
             if (null != music)
                 currentButton.setText(music.getComposerName());
@@ -196,8 +200,6 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * update igh score if current score is greatr than high score
          */
-        Log.d(TAG, "currentScore : " + currentScore);
-        Log.d(TAG, "highScore : " + highScore);
         if (currentScore > highScore)
             PreferenceUtils.setHighScore(this, currentScore);
 
@@ -262,5 +264,38 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         exoPlayer.stop();
         exoPlayer.release();
         exoPlayer = null;
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        if ((playbackState == ExoPlayer.STATE_READY) && playWhenReady == true)
+            Log.d(TAG, "playing");
+        else
+            Log.d(TAG, "paused");
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 }
