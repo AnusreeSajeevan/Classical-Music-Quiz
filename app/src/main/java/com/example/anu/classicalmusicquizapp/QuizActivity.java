@@ -4,6 +4,8 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -74,7 +76,7 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
     private static final int DELAY_CORRECT_ANSWER_DISPLAY = 1000;
     private static final String TAG = QuizActivity.class.getSimpleName();
     private SimpleExoPlayer exoPlayer;
-    private MediaSessionCompat mediaSession;
+    private static MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
     private NotificationManager notificationManager;
 
@@ -432,5 +434,16 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
                         .setShowActionsInCompactView(0,1));
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0, builder.build());
+    }
+
+    /**
+     * Broadcast Receiver registered to receive the MEDIA_BUTTON intent coming from clients.
+     */
+    public static class MyMediaReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            MediaButtonReceiver.handleIntent(mediaSession, intent);
+        }
     }
 }

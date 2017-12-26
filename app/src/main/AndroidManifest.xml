@@ -17,6 +17,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".QuizActivity"></activity>
+        <receiver android:name=".QuizActivity$MyMediaReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
