@@ -1,5 +1,9 @@
 package com.example.anu.classicalmusicquizapp;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -7,7 +11,11 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -66,6 +74,9 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
     private static final int DELAY_CORRECT_ANSWER_DISPLAY = 1000;
     private static final String TAG = QuizActivity.class.getSimpleName();
     private SimpleExoPlayer exoPlayer;
+    private MediaSessionCompat mediaSession;
+    private PlaybackStateCompat.Builder mStateBuilder;
+    private NotificationManager notificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +120,8 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         initializeButtons();
+        
+        initializeMediaSession();
 
         Music music = QuizUtils.getMusicByID(this, correctAnswerId);
         if (null == music){
@@ -117,6 +130,51 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         initializePlayer(Uri.parse(music.getUri()));
+    }
+
+    /**
+     * method to initialize the media session, it should use MediaSessionCompat
+     * set the flags for external client, set the available actions you want to support, and then start the session
+     *
+     * Initializes the Media Session to be enabled with media buttons, transport controls, callbacks
+     * and media controller.
+     */
+    private void initializeMediaSession() {
+
+        //create media session object
+        mediaSession = new MediaSessionCompat(this, TAG);
+
+        /**
+         * enable callbacks from MediaButtons and TransportControlls
+         */
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+        /**
+         * do not let MediaButtons restart the player when app is not visible
+         */
+        mediaSession.setMediaButtonReceiver(null);
+
+        /**
+         * set initial playbackstate to AUTO_PLAY so that the media buttons can start the player
+         */
+        mStateBuilder = new PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_PLAY |
+                        PlaybackStateCompat.ACTION_PAUSE |
+                        PlaybackStateCompat.ACTION_PLAY_PAUSE |
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                );
+
+        mediaSession.setPlaybackState(mStateBuilder.build());
+
+        /**
+         * {@link MySessionCallbacks} has methods that handles callbacks from media controller
+         */
+        mediaSession.setCallback(new MySessionCallbacks());
+
+        /**
+         * start the media session since the activity is alive
+         */
+        mediaSession.setActive(true);
     }
 
     /**
@@ -255,6 +313,7 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         releasePlayer();
+        mediaSession.setActive(false);
     }
 
     /**
@@ -281,12 +340,23 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    /**
+     * Method that is called when the ExoPlayer state changes. Used to update the MediaSession
+     * PlayBackState to keep in sync, and post the media notification.
+     * @param playWhenReady true if ExoPlayer is playing, false if it's paused.
+     * @param playbackState int describing the state of ExoPlayer. Can be STATE_READY, STATE_IDLE,
+     *                      STATE_BUFFERING, or STATE_ENDED.
+     */
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        if ((playbackState == ExoPlayer.STATE_READY) && playWhenReady == true)
-            Log.d(TAG, "playing");
-        else
-            Log.d(TAG, "paused");
+        if ((playbackState == ExoPlayer.STATE_READY) && playWhenReady == true) {
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), 1f);
+        }
+        else {
+            mStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), 1f);
+        }
+        mediaSession.setPlaybackState(mStateBuilder.build());
+        showNotification(mStateBuilder.build());
     }
 
     @Override
@@ -297,5 +367,70 @@ public class QuizActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onPositionDiscontinuity() {
 
+    }
+
+    /**
+     * media session callbacks where all the external clients control the player
+     */
+    private class MySessionCallbacks extends MediaSessionCompat.Callback{
+
+        @Override
+        public void onPlay() {
+            exoPlayer.setPlayWhenReady(true);
+        }
+
+        @Override
+        public void onPause() {
+            exoPlayer.setPlayWhenReady(false);
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+            exoPlayer.seekTo(0);
+        }
+    }
+
+    /**
+     * method to show a media style notification with an action
+     * that depends on the MediaSession PlayBackState
+     * @param stateCompat PlayBackState of the MediaSession
+     */
+    private void showNotification(PlaybackStateCompat stateCompat){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        int icon;
+        String playPauseTitle;
+        if (stateCompat.getState() == PlaybackStateCompat.STATE_PLAYING){
+            icon = R.drawable.exo_controls_pause;
+            playPauseTitle = getResources().getString(R.string.pause);
+        }
+        else {
+            icon = R.drawable.exo_controls_play;
+            playPauseTitle = getResources().getString(R.string.play);
+        }
+
+        /**
+         * define play/pause and skip to previous actions
+         */
+        NotificationCompat.Action actionPlayPause = new NotificationCompat.Action(icon, playPauseTitle,
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE));
+
+        NotificationCompat.Action actionRestart = new NotificationCompat.Action(R.drawable.exo_controls_previous, getResources().getString(R.string.restart),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE));
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, QuizActivity.class), 0);
+
+        builder.setContentTitle(getResources().getString(R.string.notification_title))
+                .setContentText(getResources().getString(R.string.notification_text))
+                .setContentIntent(pendingIntent)
+                .addAction(actionPlayPause)
+                .addAction(actionRestart)
+                .setSmallIcon(R.drawable.ic_music_note)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setStyle(new NotificationCompat.MediaStyle()
+                        .setMediaSession(mediaSession.getSessionToken())
+                        .setShowActionsInCompactView(0,1));
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(0, builder.build());
     }
 }

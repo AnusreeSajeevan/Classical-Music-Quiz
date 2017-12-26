@@ -6,4 +6,9 @@
     <string name="your_score_display_text">Your score : %1$d / %2$d</string>
     <string name="sample_list_load_error">Error loading one or more samples</string>
     <string name="music_not_found">Music not found</string>
+    <string name="play">play</string>
+    <string name="pause">pause</string>
+    <string name="restart">restart</string>
+    <string name="notification_title">Can you guess the composer?</string>
+    <string name="notification_text">Click on the play button to play the music</string>
 </resources>
